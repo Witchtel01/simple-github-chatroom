@@ -150,9 +150,7 @@ async function joinChatroom() {
   }
 
   errorMessageDiv.textContent = "Checking chatroom...";
-
-  // Initialize chat here first to ensure 'database' is defined
-  initializeChat(roomName); // Initialize chat immediately when joining
+  initializeChat(roomName); // Initialize chat immediately
 
   try {
     const metadataSnapshot = await get(
@@ -161,36 +159,44 @@ async function joinChatroom() {
     const roomMetadata = metadataSnapshot.val();
 
     if (roomMetadata && roomMetadata.isPasswordProtected) {
-      // ... (Show password access container - keep this part the same) ...
-
-      // Set up Verify Button event listener
-      const verifyPassword = async () => {
-        const enteredPassword = secretCodeInput.value;
-        errorMessageDiv.textContent = "Verifying password...";
-        const verificationResult = await verifyChatCodeCall(
-          enteredPassword,
-          roomName
-        );
-        if (verificationResult.success) {
-          // Initialize chat ONLY if verification AND isPasswordProtected is false (for public rooms)
-          // initializeChat(verificationResult.chatroomName); // Already initialized above, no need to re-initialize. Use same roomName
-        } else {
-          errorMessageDiv.textContent =
-            verificationResult.error || "Incorrect password.";
-        }
-        verifyButton.removeEventListener("click", verifyPassword);
-      };
-      verifyButton.addEventListener("click", verifyPassword);
-
-      // Show password access container here after initialization and metadata check
       chatroomSelectionContainer.style.display = "none";
       accessContainer.style.display = "block";
       chatContainer.style.display = "none";
       errorMessageDiv.textContent = "";
+
+      // **Remove any existing event listener first**
+      verifyButton.replaceEventListener("click", verifyPassword); // or use removeEventListener and addEventListener
+
+      // Set up Verify Button event listener
+      function verifyPassword(event) {
+        // Define verifyPassword as a function within this scope
+        event.preventDefault(); // Prevent default form submission if inside a form
+        const enteredPassword = secretCodeInput.value;
+        errorMessageDiv.textContent = "Verifying password...";
+        verifyChatCodeCall(enteredPassword, roomName)
+          .then((verificationResult) => {
+            // Use .then for cleaner async handling
+            if (verificationResult.success) {
+              // Already initialized chat earlier. Just hide access container and show chat container
+              accessContainer.style.display = "none";
+              chatContainer.style.display = "block";
+              errorMessageDiv.textContent = "";
+            } else {
+              errorMessageDiv.textContent =
+                verificationResult.error || "Incorrect password.";
+            }
+          })
+          .catch((error) => {
+            // Catch errors in promise chain
+            console.error("Error during password verification:", error);
+            errorMessageDiv.textContent =
+              "Error verifying password. Please try again.";
+          });
+      }
+      verifyButton.addEventListener("click", verifyPassword);
     } else {
       // Chatroom is NOT password protected
-      // Join directly
-      errorMessageDiv.textContent = `Joining chatroom: ${roomName}...`; // initializeChat(roomName); // Already initialized above, no need to re-initialize.
+      errorMessageDiv.textContent = `Joining chatroom: ${roomName}...`;
       chatroomSelectionContainer.style.display = "none";
       accessContainer.style.display = "none";
       chatContainer.style.display = "block";
