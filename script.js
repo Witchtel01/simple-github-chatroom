@@ -171,24 +171,34 @@ async function joinChatroom() {
       // Set up Verify Button event listener
       function verifyPassword(event) {
         // Define verifyPassword as a function within this scope
-        event.preventDefault(); // Prevent default form submission if inside a form
+        event.preventDefault();
         const enteredPassword = secretCodeInput.value;
         errorMessageDiv.textContent = "Verifying password...";
         verifyChatCodeCall(enteredPassword, roomName)
-          .then((verificationResult) => {
-            // Use .then for cleaner async handling
+          .then(async (verificationResult) => {
+            // Mark callback as async to use await
             if (verificationResult.success) {
-              // Already initialized chat earlier. Just hide access container and show chat container
-              accessContainer.style.display = "none";
-              chatContainer.style.display = "block";
-              errorMessageDiv.textContent = "";
+              // --- Sign in with Custom Token ---
+              try {
+                await firebase
+                  .auth()
+                  .signInWithCustomToken(verificationResult.token); // Sign in with the token
+                console.log("Firebase authentication successful!");
+                accessContainer.style.display = "none";
+                chatContainer.style.display = "block";
+                errorMessageDiv.textContent = "";
+                // initializeChat(verificationResult.chatroomName); // Already initialized
+              } catch (authError) {
+                console.error("Firebase authentication error:", authError);
+                errorMessageDiv.textContent =
+                  "Error authenticating with Firebase."; // Handle auth error
+              }
             } else {
               errorMessageDiv.textContent =
                 verificationResult.error || "Incorrect password.";
             }
           })
           .catch((error) => {
-            // Catch errors in promise chain
             console.error("Error during password verification:", error);
             errorMessageDiv.textContent =
               "Error verifying password. Please try again.";
@@ -211,7 +221,6 @@ async function joinChatroom() {
 
 // --- Helper functions to call Netlify Functions ---
 async function verifyChatCodeCall(enteredCode, chatroomName) {
-  // Keep chatroomName parameter
   try {
     const response = await fetch(
       `${NETLIFY_FUNCTIONS_BASE_URL}/verifyChatCode?code=${encodeURIComponent(
@@ -226,7 +235,7 @@ async function verifyChatCodeCall(enteredCode, chatroomName) {
       };
     }
     const data = await response.json();
-    return data; // Expecting { success: true, isPasswordProtected: true/false, chatroomName: "..." } or { success: false, error: "..." }
+    return data; // Expecting { success: true, isPasswordProtected: true/false, chatroomName: "...", token: "..." }
   } catch (error) {
     console.error("Error calling verifyChatCode Netlify Function:", error);
     return { success: false, error: "Error verifying password." };
