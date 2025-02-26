@@ -3,7 +3,15 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.7/firebase
 import { getDatabase, ref, push, onChildAdded, serverTimestamp, query, orderByChild, limitToLast, get } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-database.js";
 
 // Firebase configuration (Replace with your actual config) - Keep config as before
-const firebaseConfig = { /* ... your Firebase config ... */ };
+const firebaseConfig = {
+    apiKey: "AIzaSyB2W99M0O5ZzFqOilrVTyhjRCsvjxpZgI8",
+    authDomain: "simple-github-chatroom-109.firebaseapp.com",
+    projectId: "simple-github-chatroom-109",
+    storageBucket: "simple-github-chatroom-109.firebasestorage.app",
+    messagingSenderId: "207217285359",
+    appId: "1:207217285359:web:76b6b4c2acd7cbdf16231a",
+    measurementId: "G-NLHVVGCDH5"
+  };
 
 // Initialize Firebase App (Modular way) - Keep initialization as before (in initializeChat function)
 let app;
@@ -213,5 +221,37 @@ passwordCheckbox.addEventListener('change', function() {
 
 
 // --- (displayMessage and formatTimestamp functions - no changes needed) ---
-function displayMessage(messageData) { /* ... same displayMessage function ... */ }
-function formatTimestamp(timestamp) { /* ... same formatTimestamp function ... */ }
+// --- (displayMessage and formatTimestamp functions - no changes needed) ---
+function displayMessage(messageData) {
+    const messageDiv = document.createElement("div"); // Create a container for the message
+    messageDiv.classList.add("message"); // Add class for styling
+  
+    const usernameSpan = document.createElement("span");
+    usernameSpan.classList.add("message-username");
+    usernameSpan.textContent = messageData.username + ":"; // Display username + colon
+  
+    const timestampSpan = document.createElement("span");
+    timestampSpan.classList.add("message-timestamp");
+    const formattedTime = formatTimestamp(messageData.timestamp); // Format the timestamp
+    timestampSpan.textContent = formattedTime;
+  
+    const textDiv = document.createElement("div");
+    textDiv.classList.add("message-text");
+    textDiv.textContent = messageData.text;
+  
+    messageDiv.appendChild(usernameSpan); // Add username to message container
+    messageDiv.appendChild(timestampSpan); // Add timestamp to message container
+    messageDiv.appendChild(textDiv); // Add message text to container
+  
+    chatBox.appendChild(messageDiv); // Add the whole message container to chat box
+    chatBox.scrollTop = chatBox.scrollHeight; // Scroll to bottom
+  }
+  function formatTimestamp(timestamp) {
+    if (!timestamp) return "—"; // or handle null/undefined timestamps as needed
+  
+    const date = new Date(timestamp); // Firebase timestamps are in milliseconds
+    const hours = date.getHours().toString().padStart(2, "0");
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+    return `${hours}:${minutes}`; // HH:MM format (you can customize the format)
+  }
+  
