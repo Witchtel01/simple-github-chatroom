@@ -165,7 +165,8 @@ async function joinChatroom() {
       errorMessageDiv.textContent = "";
 
       // **Remove any existing event listener first**
-      verifyButton.replaceEventListener("click", verifyPassword); // or use removeEventListener and addEventListener
+      verifyButton.removeEventListener("click", verifyPassword); // Remove previous listener (if any)
+      verifyButton.addEventListener("click", verifyPassword); // Add the new listener
 
       // Set up Verify Button event listener
       function verifyPassword(event) {
