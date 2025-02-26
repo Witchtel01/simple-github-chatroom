@@ -12,7 +12,6 @@ const firebaseConfig = {
     appId: "1:207217285359:web:76b6b4c2acd7cbdf16231a",
     measurementId: "G-NLHVVGCDH5"
   };
-
 // Initialize Firebase App (Modular way)
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app); // Get Realtime Database instance
@@ -20,15 +19,19 @@ const database = getDatabase(app); // Get Realtime Database instance
 const chatBox = document.getElementById('chat-box');
 const messageInput = document.getElementById('message-input');
 const sendButton = document.getElementById('send-button');
+const usernameInput = document.getElementById('username-input'); // Get username input
 
 // Function to send a message
 function sendMessage() {
     const messageText = messageInput.value.trim();
+    const username = usernameInput.value.trim() || 'Anonymous'; // Get username, default to 'Anonymous' if empty
+
     if (messageText) {
-        // Push message to Firebase Realtime Database (Modular way)
-        push(ref(database, 'messages'), { // Use ref() to create a database reference
+        // Push message to Firebase Realtime Database with username and timestamp
+        push(ref(database, 'messages'), {
+            username: username,      // Add username
             text: messageText,
-            timestamp: serverTimestamp() // Use serverTimestamp() for timestamp
+            timestamp: serverTimestamp()
         });
         messageInput.value = ''; // Clear input after sending
     }
@@ -44,19 +47,47 @@ messageInput.addEventListener('keypress', function (event) {
     }
 });
 
-// Listen for new messages from Firebase (Modular way)
-const messagesRef = query(ref(database, 'messages'), orderByChild('timestamp'), limitToLast(50)); // Create a query
-onChildAdded(messagesRef, (snapshot) => { // Use onChildAdded with the query
+// Listen for new messages from Firebase
+const messagesRef = query(ref(database, 'messages'), orderByChild('timestamp'), limitToLast(50));
+onChildAdded(messagesRef, (snapshot) => {
     const messageData = snapshot.val();
     if (messageData) {
-        displayMessage(messageData.text);
+        displayMessage(messageData); // Pass the whole messageData object
     }
 });
 
-// Function to display a message in the chat box
-function displayMessage(message) {
-    const messageElement = document.createElement('div');
-    messageElement.textContent = message;
-    chatBox.appendChild(messageElement);
-    chatBox.scrollTop = chatBox.scrollHeight; // Scroll to bottom for new messages
+// Function to display a message in the chat box (now takes messageData)
+function displayMessage(messageData) {
+    const messageDiv = document.createElement('div'); // Create a container for the message
+    messageDiv.classList.add('message'); // Add class for styling
+
+    const usernameSpan = document.createElement('span');
+    usernameSpan.classList.add('message-username');
+    usernameSpan.textContent = messageData.username + ":"; // Display username + colon
+
+    const timestampSpan = document.createElement('span');
+    timestampSpan.classList.add('message-timestamp');
+    const formattedTime = formatTimestamp(messageData.timestamp); // Format the timestamp
+    timestampSpan.textContent = formattedTime;
+
+    const textDiv = document.createElement('div');
+    textDiv.classList.add('message-text');
+    textDiv.textContent = messageData.text;
+
+    messageDiv.appendChild(usernameSpan);    // Add username to message container
+    messageDiv.appendChild(timestampSpan);   // Add timestamp to message container
+    messageDiv.appendChild(textDiv);         // Add message text to container
+
+    chatBox.appendChild(messageDiv);        // Add the whole message container to chat box
+    chatBox.scrollTop = chatBox.scrollHeight; // Scroll to bottom
+}
+
+// Function to format timestamp (you can customize this)
+function formatTimestamp(timestamp) {
+    if (!timestamp) return "—"; // or handle null/undefined timestamps as needed
+
+    const date = new Date(timestamp); // Firebase timestamps are in milliseconds
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`; // HH:MM format (you can customize the format)
 }
