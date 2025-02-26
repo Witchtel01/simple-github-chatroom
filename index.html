@@ -2,34 +2,75 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Simple GitHub Chat</title>
+    <title>Multiple Chatrooms - GitHub Chat</title>
     <style>
         body { font-family: sans-serif; margin: 20px; }
+        #chatroom-selection-container { text-align: center; margin-bottom: 20px; } /* Container for room selection */
+        #create-room-container, #join-room-container { margin-bottom: 15px; } /* Containers for create/join forms */
+        .room-input { width: 250px; padding: 10px; margin-bottom: 10px; display: block; margin-left: auto; margin-right: auto; } /* Input for room names, passwords */
+        .room-button { padding: 10px 20px; cursor: pointer; display: block; margin-left: auto; margin-right: auto; margin-bottom: 10px; } /* Buttons for create/join */
+        #password-checkbox-container { margin-bottom: 10px; } /* Container for password checkbox */
+        #password-input { display: none; width: 250px; padding: 10px; margin-bottom: 10px; margin-left: auto; margin-right: auto; } /* Initially hide password input */
+        #chat-container { display: none; } /* Initially hide chat container */
         #chat-box { border: 1px solid #ccc; height: 300px; overflow-y: scroll; padding: 10px; margin-bottom: 10px; }
-        .message { margin-bottom: 8px; padding: 5px; border-bottom: 1px solid #eee; } /* Style for each message */
-        .message-username { font-weight: bold; margin-right: 5px; } /* Style for username */
-        .message-timestamp { font-size: 0.8em; color: #777; margin-left: 5px; } /* Style for timestamp */
-        .message-text { word-wrap: break-word; } /* Style for message text */
-        #username-input { width: 200px; padding: 8px; margin-bottom: 10px; } /* Style for username input */
+        .message { margin-bottom: 8px; padding: 5px; border-bottom: 1px solid #eee; }
+        .message-username { font-weight: bold; margin-right: 5px; }
+        .message-timestamp { font-size: 0.8em; color: #777; margin-left: 5px; }
+        .message-text { word-wrap: break-word; }
+        #username-input { width: 200px; padding: 8px; margin-bottom: 10px; }
         #message-input { width: 70%; padding: 8px; }
         #send-button { padding: 8px 15px; }
+        #error-message { color: red; margin-top: 10px; text-align: center; } /* Error messages in center */
+        #access-container { display: none; text-align: center; } /* Access code container hidden initially, used for password protected rooms later */
+        #secret-code-input { width: 250px; padding: 10px; margin-bottom: 15px; }
+        #verify-button { padding: 10px 20px; cursor: pointer; }
+
     </style>
 </head>
 <body>
-    <h1>Simple GitHub Chat</h1>
+    <h1>GitHub Chat - Multiple Chatrooms</h1>
 
-    <div>
-        <input type="text" id="username-input" placeholder="Enter your username (optional)">
+    <div id="chatroom-selection-container">
+        <div id="create-room-container">
+            <h2>Create New Chatroom</h2>
+            <input type="text" id="create-room-name-input" class="room-input" placeholder="Enter chatroom name">
+            <div id="password-checkbox-container">
+                <input type="checkbox" id="password-checkbox"> <label for="password-checkbox">Set Password (optional)</label>
+            </div>
+            <input type="password" id="create-room-password-input" class="room-input" placeholder="Chatroom password (optional, if checked)" style="display: none;">
+            <button id="create-room-button" class="room-button">Create Chatroom</button>
+        </div>
+
+        <div id="join-room-container">
+            <h2>Join Existing Chatroom</h2>
+            <input type="text" id="join-room-name-input" class="room-input" placeholder="Enter chatroom name to join">
+            <button id="join-room-button" class="room-button">Join Chatroom</button>
+        </div>
+        <div id="error-message"></div> <! -- General error messages -->
     </div>
 
-    <div id="chat-box">
+    <div id="access-container"> <! -- Container for password entry if room is password protected - will be shown later -->
+        <p>This chatroom is password protected. Enter password to access:</p>
+        <input type="password" id="secret-code-input" placeholder="Chatroom Password">
+        <button id="verify-button">Verify Password</button>
     </div>
 
-    <div>
-        <input type="text" id="message-input" placeholder="Type your message...">
-        <button id="send-button">Send</button>
+    <div id="chat-container">
+        <div>
+            <input type="text" id="username-input" placeholder="Enter your username (optional)">
+        </div>
+
+        <div id="chat-box">
+        </div>
+
+        <div>
+            <input type="text" id="message-input" placeholder="Type your message...">
+            <button id="send-button">Send</button>
+        </div>
     </div>
 
+
+    <script type="module" src="config.js"></script> <! -- Load config first -->
     <script type="module" src="https://www.gstatic.com/firebasejs/9.6.7/firebase-app.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/9.6.7/firebase-database.js"></script>
     <script type="module" src="script.js"></script>
