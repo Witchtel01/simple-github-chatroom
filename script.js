@@ -125,39 +125,36 @@ async function joinChatroom() {
         return;
     }
 
-    errorMessageDiv.textContent = "Checking chatroom..."; // Indicate loading
+    errorMessageDiv.textContent = "Checking chatroom...";
 
     try {
         const metadataSnapshot = await get(ref(database, `chatrooms_metadata/${roomName}`));
         const roomMetadata = metadataSnapshot.val();
 
         if (roomMetadata && roomMetadata.isPasswordProtected) {
-            // Show password access container
-            chatroomSelectionContainer.style.display = 'none'; // Hide room selection again
-            accessContainer.style.display = 'block';
-            errorMessageDiv.textContent = ''; // Clear any messages
-            secretCodeInput.value = ''; // Clear previous input
+            // ... (Show password access container - keep this part the same) ...
 
-            // Set up Verify Button event listener - IMPORTANT: Remove any existing listener to avoid duplicates
+            // Set up Verify Button event listener
             const verifyPassword = async () => {
                 const enteredPassword = secretCodeInput.value;
-                errorMessageDiv.textContent = "Verifying password..."; // Indicate loading
-                const verificationResult = await verifyChatCodeCall(enteredPassword, roomName); // Call Netlify Function
+                errorMessageDiv.textContent = "Verifying password...";
+                const verificationResult = await verifyChatCodeCall(enteredPassword, roomName);
                 if (verificationResult.success) {
-                    initializeChat(roomName); // Initialize chat on successful verification
+                    // Initialize chat ONLY if verification AND isPasswordProtected is false (for public rooms)
+                    initializeChat(verificationResult.chatroomName); // Initialize with chatroomName from response
                 } else {
-                    errorMessageDiv.textContent = verificationResult.error || "Incorrect password."; // Show error message
+                    errorMessageDiv.textContent = verificationResult.error || "Incorrect password.";
                 }
-                verifyButton.removeEventListener('click', verifyPassword); // Remove listener after one use
+                verifyButton.removeEventListener('click', verifyPassword);
             };
-            verifyButton.addEventListener('click', verifyPassword); // Add event listener
+            verifyButton.addEventListener('click', verifyPassword);
 
-        } else {
-            // Join directly if not password protected
-            errorMessageDiv.textContent = `Joining chatroom: ${roomName}...`; // Indicate joining
-            initializeChat(roomName);
+
+        } else { // Chatroom is NOT password protected
+            // Join directly
+            errorMessageDiv.textContent = `Joining chatroom: ${roomName}...`;
+            initializeChat(roomName); // Directly initialize for non-password-protected rooms
         }
-
 
     } catch (error) {
         console.error("Error checking chatroom metadata:", error);
@@ -167,7 +164,7 @@ async function joinChatroom() {
 
 
 // --- Helper functions to call Netlify Functions ---
-async function verifyChatCodeCall(enteredCode, chatroomName) {
+async function verifyChatCodeCall(enteredCode, chatroomName) { // Keep chatroomName parameter
     try {
         const response = await fetch(`${NETLIFY_FUNCTIONS_BASE_URL}/verifyChatCode?code=${encodeURIComponent(enteredCode)}&chatroomName=${encodeURIComponent(chatroomName)}`);
         if (!response.ok) {
@@ -175,7 +172,7 @@ async function verifyChatCodeCall(enteredCode, chatroomName) {
             return { success: false, error: `Verification failed: ${response.statusText}` };
         }
         const data = await response.json();
-        return data;
+        return data; // Expecting { success: true, isPasswordProtected: true/false, chatroomName: "..." } or { success: false, error: "..." }
     } catch (error) {
         console.error('Error calling verifyChatCode Netlify Function:', error);
         return { success: false, error: 'Error verifying password.' };

@@ -38,8 +38,8 @@ exports.handler = async function (event, context) {
 
     if (!roomMetadata) {
       return {
-        statusCode: 404, // 404 Not Found
-        body: JSON.stringify({ success: false, error: "Chatroom not found." }),
+        statusCode: 404,
+        body: JSON.stringify({ success: false, error: 'Chatroom not found.' }),
       };
     }
 
@@ -47,8 +47,8 @@ exports.handler = async function (event, context) {
       return {
         // If not password protected, verification is always successful
         statusCode: 200,
-        body: JSON.stringify({ success: true }),
-      };
+        body: JSON.stringify({ success: true, isPasswordProtected: false, chatroomName: chatroomName }), // Include isPasswordProtected and chatroomName
+        };
     }
 
     const passwordHashFromDB = roomMetadata.passwordHash;
@@ -59,7 +59,7 @@ exports.handler = async function (event, context) {
         statusCode: 500, // 500 Internal Server Error - unexpected state
         body: JSON.stringify({
           success: false,
-          error: "Server error: Password hash not found.",
+          body: JSON.stringify({ success: false, error: 'Server error: Password hash not found.' }),
         }),
       };
     }
@@ -72,12 +72,12 @@ exports.handler = async function (event, context) {
     if (passwordMatch) {
       return {
         statusCode: 200,
-        body: JSON.stringify({ success: true }),
+        body: JSON.stringify({ success: true, isPasswordProtected: true, chatroomName: chatroomName }), // Include isPasswordProtected and chatroomName
       };
     } else {
       return {
         statusCode: 401, // 401 Unauthorized - incorrect password
-        body: JSON.stringify({ success: false, error: "Incorrect password." }),
+        body: JSON.stringify({ success: false, error: 'Incorrect password.' }),
       };
     }
   } catch (error) {
