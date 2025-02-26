@@ -141,5 +141,35 @@ passwordCheckbox.addEventListener('change', function() {
 
 
 // --- (displayMessage and formatTimestamp functions - no changes needed) ---
-function displayMessage(messageData) { /* ... same displayMessage function ... */ }
-function formatTimestamp(timestamp) { /* ... same formatTimestamp function ... */ }
+function displayMessage(messageData) {
+    const messageDiv = document.createElement('div'); // Create a container for the message
+    messageDiv.classList.add('message'); // Add class for styling
+
+    const usernameSpan = document.createElement('span');
+    usernameSpan.classList.add('message-username');
+    usernameSpan.textContent = messageData.username + ":"; // Display username + colon
+
+    const timestampSpan = document.createElement('span');
+    timestampSpan.classList.add('message-timestamp');
+    const formattedTime = formatTimestamp(messageData.timestamp); // Format the timestamp
+    timestampSpan.textContent = formattedTime;
+
+    const textDiv = document.createElement('div');
+    textDiv.classList.add('message-text');
+    textDiv.textContent = messageData.text;
+
+    messageDiv.appendChild(usernameSpan);    // Add username to message container
+    messageDiv.appendChild(timestampSpan);   // Add timestamp to message container
+    messageDiv.appendChild(textDiv);         // Add message text to container
+
+    chatBox.appendChild(messageDiv);        // Add the whole message container to chat box
+    chatBox.scrollTop = chatBox.scrollHeight; // Scroll to bottom
+}
+function formatTimestamp(timestamp) {
+    if (!timestamp) return "—"; // or handle null/undefined timestamps as needed
+
+    const date = new Date(timestamp); // Firebase timestamps are in milliseconds
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`; // HH:MM format (you can customize the format)
+}
