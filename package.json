@@ -1,7 +1,0 @@
-{
-    "name": "simple-chatroom",
-    "dependencies": {
-        "bcrypt": "^5.1.0",
-        "firebase-admin": "^12.0.0"
-    }
-}
