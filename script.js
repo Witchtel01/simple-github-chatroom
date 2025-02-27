@@ -1,4 +1,3 @@
-// Import Firebase modules (Modular SDK) - Keep imports as before
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-app.js";
 import {
   getDatabase,
@@ -11,6 +10,11 @@ import {
   limitToLast,
   get,
 } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-database.js";
+import {
+  getAuth,
+  signInWithCustomToken,
+  signOut,
+} from "https://www.gstatic.com/firebasejs/9.6.7/firebase-auth.js"; // IMPORT getAuth and signInWithCustomToken
 
 // Firebase configuration (Replace with your actual config) - Keep config as before
 const firebaseConfig = {
@@ -24,8 +28,8 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase App (Modular way) - Keep initialization as before (in initializeChat function)
-let app;
-let database;
+const app = initializeApp(firebaseConfig); // Initialize app here
+let database = getDatabase(app);
 
 // DOM Element Selectors - Updated to include access container elements
 const chatroomSelectionContainer = document.getElementById(
@@ -60,11 +64,6 @@ const NETLIFY_FUNCTIONS_BASE_URL = "/.netlify/functions"; // Base URL for Netlif
 
 // --- Initialize Chat (same as before) ---
 function initializeChat(chatroomName) {
-  if (!app) {
-    app = initializeApp(firebaseConfig);
-    database = getDatabase(app);
-  }
-
   currentChatroomName = chatroomName;
 
   chatroomSelectionContainer.style.display = "none";
@@ -177,16 +176,16 @@ async function joinChatroom() {
           .then(async (verificationResult) => {
             if (verificationResult.success) {
               try {
-                console.log("Attempting Firebase sign-in with custom token...");
-                await firebase
-                  .auth()
-                  .signInWithCustomToken(verificationResult.token);
-                console.log("Firebase authentication SUCCESSFUL!");
-                const currentUser = firebase.auth().currentUser;
-                console.log("Current Firebase User object:", currentUser);
+                console.log("Attempting Firebase sign-in with custom token..."); // BEFORE sign-in
+                const auth = getAuth(app); // Get the auth service instance using getAuth(app)
+                await signInWithCustomToken(auth, verificationResult.token); // Use signInWithCustomToken(auth, token) and pass the auth instance
+                console.log("Firebase authentication SUCCESSFUL!"); // AFTER sign-in success
+                const currentUser = auth.currentUser; // Get currentUser from the auth instance
+                console.log("Current Firebase User object:", currentUser); // Log the user object in detail
                 if (currentUser) {
                   console.log("  User UID:", currentUser.uid);
                   console.log("  User isAnonymous:", currentUser.isAnonymous);
+                  // ... any other relevant properties you see in the object in the console
                 } else {
                   console.warn(
                     "currentUser is unexpectedly NULL after signInWithCustomToken!"
@@ -197,20 +196,20 @@ async function joinChatroom() {
                 chatContainer.style.display = "block";
                 errorMessageDiv.textContent = "";
               } catch (authError) {
-                console.error("Firebase authentication ERROR:", authError);
+                console.error("Firebase authentication ERROR:", authError); // Log detailed auth error
                 errorMessageDiv.textContent =
                   "Error authenticating with Firebase.";
               }
             } else {
               errorMessageDiv.textContent =
-                verificationResult.error || "Incorrect password."; // Display verificationResult error
+                verificationResult.error || "Incorrect password.";
             }
           })
           .catch((error) => {
             console.error(
               "Error during password verification (verifyChatCodeCall failed):",
               error
-            );
+            ); // Log errors from verifyChatCodeCall
             errorMessageDiv.textContent =
               "Error verifying password. Please try again.";
           });
