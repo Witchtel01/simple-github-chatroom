@@ -307,31 +307,31 @@ passwordCheckbox.addEventListener("change", function () {
   }
 });
 
-// --- (displayMessage and formatTimestamp functions - no changes needed) ---
-// --- (displayMessage and formatTimestamp functions - no changes needed) ---
 function displayMessage(messageData) {
-  const messageDiv = document.createElement("div"); // Create a container for the message
-  messageDiv.classList.add("message"); // Add class for styling
+  console.log("displayMessage function CALLED:", messageData); // Added console log here
+
+  const messageDiv = document.createElement("div");
+  messageDiv.classList.add("message");
 
   const usernameSpan = document.createElement("span");
   usernameSpan.classList.add("message-username");
-  usernameSpan.textContent = messageData.username + ":"; // Display username + colon
+  usernameSpan.textContent = messageData.username + ":";
 
   const timestampSpan = document.createElement("span");
   timestampSpan.classList.add("message-timestamp");
-  const formattedTime = formatTimestamp(messageData.timestamp); // Format the timestamp
+  const formattedTime = formatTimestamp(messageData.timestamp);
   timestampSpan.textContent = formattedTime;
 
   const textDiv = document.createElement("div");
   textDiv.classList.add("message-text");
   textDiv.textContent = messageData.text;
 
-  messageDiv.appendChild(usernameSpan); // Add username to message container
-  messageDiv.appendChild(timestampSpan); // Add timestamp to message container
-  messageDiv.appendChild(textDiv); // Add message text to container
+  messageDiv.appendChild(usernameSpan);
+  messageDiv.appendChild(timestampSpan);
+  messageDiv.appendChild(textDiv);
 
-  chatBox.appendChild(messageDiv); // Add the whole message container to chat box
-  chatBox.scrollTop = chatBox.scrollHeight; // Scroll to bottom
+  chatBox.appendChild(messageDiv);
+  chatBox.scrollTop = chatBox.scrollHeight;
 }
 function formatTimestamp(timestamp) {
   if (!timestamp) return "—"; // or handle null/undefined timestamps as needed
