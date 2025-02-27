@@ -177,17 +177,16 @@ async function joinChatroom() {
           .then(async (verificationResult) => {
             if (verificationResult.success) {
               try {
-                console.log("Attempting Firebase sign-in with custom token..."); // BEFORE sign-in
+                console.log("Attempting Firebase sign-in with custom token...");
                 await firebase
                   .auth()
                   .signInWithCustomToken(verificationResult.token);
-                console.log("Firebase authentication SUCCESSFUL!"); // AFTER sign-in success
+                console.log("Firebase authentication SUCCESSFUL!");
                 const currentUser = firebase.auth().currentUser;
-                console.log("Current Firebase User object:", currentUser); // Log the user object in detail
+                console.log("Current Firebase User object:", currentUser);
                 if (currentUser) {
                   console.log("  User UID:", currentUser.uid);
                   console.log("  User isAnonymous:", currentUser.isAnonymous);
-                  // ... any other relevant properties you see in the object in the console
                 } else {
                   console.warn(
                     "currentUser is unexpectedly NULL after signInWithCustomToken!"
@@ -198,20 +197,20 @@ async function joinChatroom() {
                 chatContainer.style.display = "block";
                 errorMessageDiv.textContent = "";
               } catch (authError) {
-                console.error("Firebase authentication ERROR:", authError); // Log detailed auth error
+                console.error("Firebase authentication ERROR:", authError);
                 errorMessageDiv.textContent =
                   "Error authenticating with Firebase.";
               }
             } else {
               errorMessageDiv.textContent =
-                verificationResult.error || "Incorrect password.";
+                verificationResult.error || "Incorrect password."; // Display verificationResult error
             }
           })
           .catch((error) => {
             console.error(
               "Error during password verification (verifyChatCodeCall failed):",
               error
-            ); // Log errors from verifyChatCodeCall
+            );
             errorMessageDiv.textContent =
               "Error verifying password. Please try again.";
           });
@@ -240,14 +239,20 @@ async function verifyChatCodeCall(enteredCode, chatroomName) {
       )}&chatroomName=${encodeURIComponent(chatroomName)}`
     );
     if (!response.ok) {
-      console.error("Verification failed:", response.statusText);
+      console.error(
+        "Verification failed:",
+        response.statusText,
+        response.status
+      ); // Log response status code
+      const errorData = await response.text(); // Extract response text
+      console.error("Error response body:", errorData); // Log error response body
       return {
         success: false,
-        error: `Verification failed: ${response.statusText}`,
+        error: `Verification failed: ${response.statusText} (${response.status}) - ${errorData}`, // Include response body in error message
       };
     }
     const data = await response.json();
-    return data; // Expecting { success: true, isPasswordProtected: true/false, chatroomName: "...", token: "..." }
+    return data;
   } catch (error) {
     console.error("Error calling verifyChatCode Netlify Function:", error);
     return { success: false, error: "Error verifying password." };
