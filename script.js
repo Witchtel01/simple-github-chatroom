@@ -184,10 +184,10 @@ async function joinChatroom() {
                   .auth()
                   .signInWithCustomToken(verificationResult.token); // Sign in with the token
                 console.log("Firebase authentication successful!");
+                console.log("Current Firebase User:", firebase.auth().currentUser);
                 accessContainer.style.display = "none";
                 chatContainer.style.display = "block";
                 errorMessageDiv.textContent = "";
-                // initializeChat(verificationResult.chatroomName); // Already initialized
               } catch (authError) {
                 console.error("Firebase authentication error:", authError);
                 errorMessageDiv.textContent =
